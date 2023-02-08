@@ -1,0 +1,41 @@
+NvSci Memory Management Kernel Driver
+=====================================
+
+Description:
+Linux kernel module for memory allocations and secure buffer sharing
+Version:
+1.0
+
+Build NvSci MM KMD for DRIVE OS x86
+===================================
+
+1) install kernel header package
+sudo apt-get install linux-headers-`uname -r`
+
+check version of desktop using "uname -r" command.
+kernel version must be 5.4.0-104+.
+
+2) build
+cd nvsci_mm
+make -C /lib/modules/`uname -r`/build M=${PWD} modules
+
+3) module parameters:
+  a) max_pending_exports: the maximum number of simultaneous/active exports by single client. Default value: UINT_MAX
+  b) [gid_start:gid_end]: the range of Linux Group ID which will have access to device node. Default value: [0:0] i.e. only accessible to root.
+  c) enable_debug: enable debug logs. Set this to any value greater than 0 to enable the logs. Default value: 0
+
+4) install NvSci MM KMD
+  a) with default parameter: sudo insmod nvsci_mm.ko
+  b) with custom parameters: sudo insmod nvsci_mm.ko max_pending_exports=4096 gid_start=1000 gid_end=2000 enable_debug=1
+  NOTE: Make sure to remove stale "/dev/nvsci_mm" device nodes before installing the kernel module.
+
+5) remove NvSci MM KMD
+sudo rmmod nvsci_mm
+
+6) clean
+make -C /lib/modules/`uname -r`/build M=${PWD} clean
+
+NOTES
+=====
+nvsci_mm.c leverages implementation from system_heap.c.
+A copy of system_heap.c is maintained here for reference.
