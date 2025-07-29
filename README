@@ -4,10 +4,10 @@ This repo contains the following kernel modules:
   Description: Linux kernel module for memory allocations and secure buffer sharing
 
 - Name: NvSciIpc kernel driver
-  Version: 1.0
+  Version: 2.0
   Description: Linux kernel module for secure buffer sharing
 
-nvsci_mm v1.0 and nvsciipc v1.0 are part NVIDIA DRIVE OS 6.0.8.0 release.
+nvsci_mm v1.0 and nvsciipc v2.0 are part NVIDIA DRIVE OS 7.0.4.0 release.
 
 Contacts:
 https://developer.nvidia.com/Contact

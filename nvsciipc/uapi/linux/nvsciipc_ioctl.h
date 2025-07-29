@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: Copyright (c) 2023 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
  * SPDX-License-Identifier: GPL-2.0-only
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -20,12 +20,25 @@
 
 #include <linux/ioctl.h>
 
-#define NVSCIIPC_MAJOR_VERSION (1U)
+#define NVSCIIPC_MAJOR_VERSION (2U)
 #define NVSCIIPC_MINOR_VERSION (0U)
+
+/*
+ * inter-thread: 2000
+ * inter-process: 16384 + 2048
+ *                16384 : reserved for DriveAV/customer
+ *                2048  : reserved for DriveOS.
+ * inter-vm: 512
+ * inter-chip-pcie: 32
+ */
+#define NVSCIIPC_MAX_EP_COUNT 21040
 
 #define NVSCIIPC_MAX_EP_NAME	64U
 #define NVSCIIPC_MAX_RDMA_NAME	64U
 #define NVSCIIPC_MAX_IP_NAME	16U
+
+#define NVSCIIPC_EP_RESERVE 1U
+#define NVSCIIPC_EP_RELEASE 0U
 
 struct nvsciipc_config_entry {
 	/* endpoint name */
@@ -46,6 +59,8 @@ struct nvsciipc_config_entry {
 	uint32_t remote_port;
 	uint32_t local_port;
 	uint32_t peer_vmid;
+	uint32_t noti_type;
+	uint32_t uid;
 };
 
 struct nvsciipc_db {
@@ -70,7 +85,11 @@ struct nvsciipc_get_db_by_vuid {
 	uint32_t idx;
 };
 
-/* for userspace level test, debugging purpose only */
+struct nvsciipc_get_db_by_idx {
+	struct nvsciipc_config_entry entry;
+	uint32_t idx;
+};
+
 struct nvsciipc_validate_auth_token {
 	uint32_t auth_token;
 	uint64_t local_vuid;
@@ -82,11 +101,15 @@ struct nvsciipc_topoid {
 	uint32_t vmid;
 };
 
-/* for userspace level test, debugging purpose only */
 struct nvsciipc_map_vuid {
 	uint64_t vuid;
 	struct nvsciipc_topoid peer_topoid;
 	uint64_t peer_vuid;
+};
+
+struct nvsciipc_reserve_ep {
+	char ep_name[NVSCIIPC_MAX_EP_NAME];
+	uint32_t action;
 };
 
 /* IOCTL magic number - seen available in ioctl-number.txt*/
@@ -107,17 +130,21 @@ struct nvsciipc_map_vuid {
 #define NVSCIIPC_IOCTL_GET_DB_SIZE \
 	_IOR(NVSCIIPC_IOCTL_MAGIC, 5, uint32_t)
 
-/* debugging purpose only */
 #define NVSCIIPC_IOCTL_VALIDATE_AUTH_TOKEN \
 	_IOWR(NVSCIIPC_IOCTL_MAGIC, 6, struct nvsciipc_validate_auth_token)
 
-/* debugging purpose only */
 #define NVSCIIPC_IOCTL_MAP_VUID \
 	_IOWR(NVSCIIPC_IOCTL_MAGIC, 7, struct nvsciipc_map_vuid)
 
 #define NVSCIIPC_IOCTL_GET_VMID \
 	_IOWR(NVSCIIPC_IOCTL_MAGIC, 8, uint32_t)
 
-#define NVSCIIPC_IOCTL_NUMBER_MAX 8
+#define NVSCIIPC_IOCTL_GET_DB_BY_IDX \
+	_IOWR(NVSCIIPC_IOCTL_MAGIC, 9, struct nvsciipc_get_db_by_idx)
+
+#define NVSCIIPC_IOCTL_RESERVE_EP \
+	_IOWR(NVSCIIPC_IOCTL_MAGIC, 10, struct nvsciipc_reserve_ep)
+
+#define NVSCIIPC_IOCTL_NUMBER_MAX 10
 
 #endif /* __NVSCIIPC_IOCTL_H__ */
